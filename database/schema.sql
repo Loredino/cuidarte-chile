@@ -13,7 +13,8 @@ CREATE TABLE usuarios (
     correo VARCHAR(120) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     telefono VARCHAR(20),
-    rol VARCHAR(30) DEFAULT 'Cuidador Principal'
+    rol VARCHAR(30) DEFAULT 'Cuidador Principal',
+    activo BOOLEAN DEFAULT TRUE
 );
 
 CREATE TABLE pacientes (
@@ -23,6 +24,7 @@ CREATE TABLE pacientes (
     nivel_dependencia VARCHAR(30) NOT NULL,
     direccion TEXT NOT NULL,
     id_usuario INT NOT NULL,
+    activo BOOLEAN DEFAULT TRUE,
     CONSTRAINT fk_paciente_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
 );
 
@@ -36,21 +38,27 @@ CREATE TABLE citas_medicas (
     CONSTRAINT fk_cita_paciente FOREIGN KEY (rut_paciente) REFERENCES pacientes(rut_paciente) ON DELETE CASCADE
 );
 
+-- Se eliminaron dosis y horario: ahora la dosis vive en medicamentos
 CREATE TABLE tratamientos (
     id_esquema SERIAL PRIMARY KEY,
-    dosis VARCHAR(50) NOT NULL,
-    horario VARCHAR(50) NOT NULL,
+    descripcion_tratamiento VARCHAR(255),
+    fecha_inicio DATE,
+    fecha_fin DATE,
     estado_tratamiento VARCHAR(30) DEFAULT 'Al día',
     rut_paciente VARCHAR(12) NOT NULL,
+    activo BOOLEAN DEFAULT TRUE,
     CONSTRAINT fk_tratamiento_paciente FOREIGN KEY (rut_paciente) REFERENCES pacientes(rut_paciente) ON DELETE CASCADE
 );
 
+-- Se eliminó id_tratamiento: el vínculo es id_esquema
 CREATE TABLE medicamentos (
     id_medicamento SERIAL PRIMARY KEY,
     nombre_medicamento VARCHAR(100) NOT NULL,
     concentracion VARCHAR(50) NOT NULL,
     laboratorio VARCHAR(100),
     id_esquema INT NOT NULL,
+    dosis VARCHAR(50),
+    frecuencia_horas INT,
     CONSTRAINT fk_medicamento_esquema FOREIGN KEY (id_esquema) REFERENCES tratamientos(id_esquema) ON DELETE CASCADE
 );
 
@@ -74,11 +82,11 @@ INSERT INTO citas_medicas (fecha_hora, especialidad, profesional, estado_cita, r
 ('2026-11-10 10:30:00', 'Geriatría', 'Dr. Fuenzalida', 'Confirmada', '14.567.890-2'),
 ('2026-11-20 15:00:00', 'Kinesiología', 'Dra. Loyola', 'Pendiente', '14.567.890-2');
 
-INSERT INTO tratamientos (dosis, horario, estado_tratamiento, rut_paciente) VALUES
-('50 mg', '20:00 hrs', 'Al día', '14.567.890-2');
+INSERT INTO tratamientos (descripcion_tratamiento, estado_tratamiento, rut_paciente) VALUES
+('Manejo del dolor', 'Al día', '14.567.890-2');
 
-INSERT INTO medicamentos (nombre_medicamento, concentracion, laboratorio, id_esquema) VALUES
-('Tramadol', '50 mg cápsulas', 'Laboratorio Chile', 1);
+INSERT INTO medicamentos (nombre_medicamento, concentracion, laboratorio, id_esquema, dosis, frecuencia_horas) VALUES
+('Tramadol', '50 mg cápsulas', 'Laboratorio Chile', 1, '1 cápsula', 8);
 
 INSERT INTO beneficios (nombre_beneficio, descripcion, estado_beneficio, rut_paciente) VALUES
 ('Estipendio Cuidador - Chile Cuida', 'Subsidio mensual para cuidadores informales', 'Activo', '14.567.890-2');
