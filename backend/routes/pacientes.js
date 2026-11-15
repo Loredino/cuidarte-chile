@@ -28,4 +28,25 @@ router.post('/pacientes', async (req, res) => {
     }
 });
 
+// Lista de pacientes de un cuidador: /api/pacientes?id_usuario=2
+router.get('/pacientes', async (req, res) => {
+    const { id_usuario } = req.query;
+    if (!id_usuario) {
+        return res.status(400).json({ error: 'id_usuario es obligatorio' });
+    }
+    try {
+        const r = await pool.query(
+            `SELECT rut_paciente, nombre_paciente
+             FROM pacientes
+             WHERE id_usuario = $1 AND activo = TRUE
+             ORDER BY nombre_paciente`,
+            [id_usuario]
+        );
+        res.json(r.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al listar pacientes' });
+    }
+});
+
 module.exports = router;
