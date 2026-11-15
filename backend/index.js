@@ -14,6 +14,7 @@ const tratamientosRoutes = require('./routes/tratamientos');
 app.use('/api', tratamientosRoutes);
 app.use('/api', require('./routes/pacientes'));
 app.use('/api', require('./routes/citas'));
+app.use('/api', require('./routes/usuarios'));
 // Ruta de prueba inicial
 app.get('/', (req, res) => {
     res.send('API de CuidARTE Chile funcionando correctamente 🚀');
