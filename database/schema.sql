@@ -38,7 +38,6 @@ CREATE TABLE citas_medicas (
     CONSTRAINT fk_cita_paciente FOREIGN KEY (rut_paciente) REFERENCES pacientes(rut_paciente) ON DELETE CASCADE
 );
 
--- Se eliminaron dosis y horario: ahora la dosis vive en medicamentos
 CREATE TABLE tratamientos (
     id_esquema SERIAL PRIMARY KEY,
     descripcion_tratamiento VARCHAR(255),
@@ -50,7 +49,6 @@ CREATE TABLE tratamientos (
     CONSTRAINT fk_tratamiento_paciente FOREIGN KEY (rut_paciente) REFERENCES pacientes(rut_paciente) ON DELETE CASCADE
 );
 
--- Se eliminó id_tratamiento: el vínculo es id_esquema
 CREATE TABLE medicamentos (
     id_medicamento SERIAL PRIMARY KEY,
     nombre_medicamento VARCHAR(100) NOT NULL,
