@@ -12,3 +12,25 @@ body { font-family: system-ui, sans-serif; background: #f3f6fa; margin: 0; }
 :root { color-scheme: light; }
 .tarjeta input { background: #fff; color: #111827; }
 .tarjeta input::placeholder { color: #9ca3af; }
+.panel { max-width: 560px; margin: 40px auto; padding: 24px; background: #fff;
+  border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.1); color: #1f2937; }
+.panel header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.panel nav { display: flex; gap: 8px; margin-bottom: 16px; }
+.panel nav button { padding: 8px 14px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; color: #1f2937; cursor: pointer; }
+.panel nav button.activa { background: #2563eb; color: #fff; border-color: #2563eb; }
+.panel nav button:disabled { opacity: .5; cursor: not-allowed; }
+.formulario { display: flex; flex-direction: column; gap: 12px; }
+.formulario h3 { margin: 0; }
+.formulario label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.formulario input, .formulario select { padding: 10px; border: 1px solid #ccc; border-radius: 6px;
+  background: #fff; color: #111827; font-size: 14px; }
+.formulario button, .panel header button { padding: 10px; border: 0; border-radius: 6px;
+  background: #2563eb; color: #fff; cursor: pointer; }
+.panel header button.secundario { background: #e5e7eb; color: #111827; padding: 8px 12px; }
+.exito { color: #15803d; margin: 0; }
+.medicamento { display: flex; flex-direction: column; gap: 8px; padding: 12px;
+  border: 1px solid #e5e7eb; border-radius: 8px; background: #f9fafb; }
+.medicamento input { padding: 10px; border: 1px solid #ccc; border-radius: 6px;
+  background: #fff; color: #111827; font-size: 14px; }
+.formulario button.agregar { background: #fff; color: #2563eb; border: 1px dashed #2563eb; }
+.formulario button.quitar { background: #fee2e2; color: #991b1b; padding: 6px; }
