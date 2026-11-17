@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const router = express.Router();
 const pool = require('../db');
+const jwt = require('jsonwebtoken');
 
 // REGISTRO: guarda la contraseña como hash, nunca en texto plano
 router.post('/usuarios/registro', async (req, res) => {
@@ -55,8 +56,13 @@ router.post('/usuarios/login', async (req, res) => {
             return res.status(401).json({ error: 'Credenciales inválidas' });
         }
 
-        delete usuario.password_hash;
-        res.json({ mensaje: 'Inicio de sesión correcto', usuario });
+       delete usuario.password_hash;
+const token = jwt.sign(
+    { id_usuario: usuario.id_usuario, rol: usuario.rol },
+    process.env.JWT_SECRET,
+    { expiresIn: '8h' }
+);
+res.json({ mensaje: 'Inicio de sesión correcto', usuario, token });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error al iniciar sesión' });

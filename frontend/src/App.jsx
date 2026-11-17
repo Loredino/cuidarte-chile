@@ -3,14 +3,26 @@ import './App.css';
 
 const API = 'http://localhost:3000/api';
 
+let token = '';
+
+const cabeceras = () => ({
+  'Content-Type': 'application/json',
+  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+});
+
 async function post(ruta, cuerpo) {
   const res = await fetch(`${API}${ruta}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: cabeceras(),
     body: JSON.stringify(cuerpo),
   });
   const data = await res.json().catch(() => ({}));
   return { ok: res.ok, data };
+}
+
+async function get(ruta) {
+  const res = await fetch(`${API}${ruta}`, { headers: cabeceras() });
+  return res.json();
 }
 
 /* ---------- LOGIN ---------- */
@@ -25,6 +37,7 @@ function Login({ onLogin }) {
     try {
       const { ok, data } = await post('/usuarios/login', { correo, password });
       if (!ok) return setError(data.error || 'Error al iniciar sesión');
+      token = data.token;
       onLogin(data.usuario);
     } catch {
       setError('No se pudo conectar con el servidor');
@@ -99,8 +112,7 @@ function FormCita({ usuario }) {
   const [msg, setMsg] = useState(null);
 
   useEffect(() => {
-    fetch(`${API}/pacientes?id_usuario=${usuario.id_usuario}`)
-      .then((r) => r.json())
+    get(`/pacientes?id_usuario=${usuario.id_usuario}`)
       .then((lista) => {
         setPacientes(lista);
         if (lista.length > 0) setF((prev) => ({ ...prev, rut_paciente: lista[0].rut_paciente }));
@@ -163,8 +175,7 @@ function FormTratamiento({ usuario }) {
   const [msg, setMsg] = useState(null);
 
   useEffect(() => {
-    fetch(`${API}/pacientes?id_usuario=${usuario.id_usuario}`)
-      .then((r) => r.json())
+    get(`/pacientes?id_usuario=${usuario.id_usuario}`)
       .then((lista) => {
         setPacientes(lista);
         if (lista.length > 0) setF((prev) => ({ ...prev, rut_paciente: lista[0].rut_paciente }));
@@ -259,8 +270,8 @@ function Resumen({ usuario }) {
   useEffect(() => {
     const id = usuario.id_usuario;
     Promise.all([
-      fetch(`${API}/citas?id_usuario=${id}`).then((r) => r.json()),
-      fetch(`${API}/tratamientos?id_usuario=${id}`).then((r) => r.json()),
+      get(`/citas?id_usuario=${id}`),
+      get(`/tratamientos?id_usuario=${id}`),
     ])
       .then(([c, t]) => { setCitas(c); setTratamientos(t); })
       .catch(() => setError('No se pudo cargar el resumen'));
@@ -321,7 +332,8 @@ export default function App() {
         <div>
           <strong>{usuario.nombre}</strong> · {usuario.rol}
         </div>
-        <button className="secundario" onClick={() => { setUsuario(null); setPestana('paciente'); }}>
+        <button className="secundario"
+                onClick={() => { token = ''; setUsuario(null); setPestana('paciente'); }}>
           Cerrar sesión
         </button>
       </header>
