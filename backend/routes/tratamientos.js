@@ -128,5 +128,36 @@ router.post('/tratamientos-completos', async (req, res) => {
         client.release();
     }
 });
-
+// Tratamientos con sus medicamentos: /api/tratamientos?id_usuario=2
+router.get('/tratamientos', async (req, res) => {
+    const { id_usuario } = req.query;
+    if (!id_usuario) {
+        return res.status(400).json({ error: 'id_usuario es obligatorio' });
+    }
+    try {
+        const r = await pool.query(
+            `SELECT t.id_esquema, t.descripcion_tratamiento, t.fecha_inicio,
+                    t.fecha_fin, t.estado_tratamiento, p.nombre_paciente,
+                    COALESCE(
+                      json_agg(json_build_object(
+                        'nombre_medicamento', m.nombre_medicamento,
+                        'concentracion', m.concentracion,
+                        'dosis', m.dosis,
+                        'frecuencia_horas', m.frecuencia_horas
+                      )) FILTER (WHERE m.id_medicamento IS NOT NULL), '[]'
+                    ) AS medicamentos
+             FROM tratamientos t
+             JOIN pacientes p ON p.rut_paciente = t.rut_paciente
+             LEFT JOIN medicamentos m ON m.id_esquema = t.id_esquema
+             WHERE p.id_usuario = $1
+             GROUP BY t.id_esquema, p.nombre_paciente
+             ORDER BY t.id_esquema DESC`,
+            [id_usuario]
+        );
+        res.json(r.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al listar tratamientos' });
+    }
+});
 module.exports = router;

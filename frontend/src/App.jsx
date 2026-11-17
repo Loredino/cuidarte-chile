@@ -13,6 +13,7 @@ async function post(ruta, cuerpo) {
   return { ok: res.ok, data };
 }
 
+/* ---------- LOGIN ---------- */
 function Login({ onLogin }) {
   const [correo, setCorreo] = useState('');
   const [password, setPassword] = useState('');
@@ -43,6 +44,7 @@ function Login({ onLogin }) {
   );
 }
 
+/* ---------- PACIENTE ---------- */
 function FormPaciente({ usuario }) {
   const vacio = { rut_paciente: '', nombre_paciente: '', fecha_nacimiento: '',
                   nivel_dependencia: 'Leve', direccion: '' };
@@ -88,6 +90,8 @@ function FormPaciente({ usuario }) {
     </form>
   );
 }
+
+/* ---------- CITA ---------- */
 function FormCita({ usuario }) {
   const vacio = { rut_paciente: '', fecha_hora: '', especialidad: '', profesional: '' };
   const [f, setF] = useState(vacio);
@@ -148,6 +152,8 @@ function FormCita({ usuario }) {
     </form>
   );
 }
+
+/* ---------- TRATAMIENTO ---------- */
 function FormTratamiento({ usuario }) {
   const medVacio = { nombre_medicamento: '', concentracion: '', dosis: '', frecuencia_horas: '' };
   const vacio = { rut_paciente: '', descripcion_tratamiento: '', fecha_inicio: '', fecha_fin: '' };
@@ -167,10 +173,8 @@ function FormTratamiento({ usuario }) {
   }, [usuario.id_usuario]);
 
   const cambiar = (e) => setF({ ...f, [e.target.name]: e.target.value });
-
   const cambiarMed = (i, campo, valor) =>
     setMeds(meds.map((m, idx) => (idx === i ? { ...m, [campo]: valor } : m)));
-
   const agregarMed = () => setMeds([...meds, { ...medVacio }]);
   const quitarMed = (i) => setMeds(meds.filter((_, idx) => idx !== i));
 
@@ -245,11 +249,71 @@ function FormTratamiento({ usuario }) {
     </form>
   );
 }
+
+/* ---------- RESUMEN ---------- */
+function Resumen({ usuario }) {
+  const [citas, setCitas] = useState([]);
+  const [tratamientos, setTratamientos] = useState([]);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const id = usuario.id_usuario;
+    Promise.all([
+      fetch(`${API}/citas?id_usuario=${id}`).then((r) => r.json()),
+      fetch(`${API}/tratamientos?id_usuario=${id}`).then((r) => r.json()),
+    ])
+      .then(([c, t]) => { setCitas(c); setTratamientos(t); })
+      .catch(() => setError('No se pudo cargar el resumen'));
+  }, [usuario.id_usuario]);
+
+  const fecha = (f) => (f ? String(f).slice(0, 10) : '—');
+
+  return (
+    <div className="resumen">
+      {error && <p className="error">{error}</p>}
+
+      <h3>Próximas citas</h3>
+      {citas.length === 0 && <p>Sin citas registradas.</p>}
+      {citas.map((c) => (
+        <div key={c.id_cita} className="item">
+          <strong>{c.nombre_paciente}</strong> · {c.especialidad} con {c.profesional}
+          <br />
+          {new Date(c.fecha_hora).toLocaleString('es-CL')} · {c.estado_cita}
+        </div>
+      ))}
+
+      <h3>Tratamientos</h3>
+      {tratamientos.length === 0 && <p>Sin tratamientos registrados.</p>}
+      {tratamientos.map((t) => (
+        <div key={t.id_esquema} className="item">
+          <strong>{t.nombre_paciente}</strong> · {t.descripcion_tratamiento}
+          <br />
+          {fecha(t.fecha_inicio)} a {fecha(t.fecha_fin)} · {t.estado_tratamiento}
+          <ul>
+            {t.medicamentos.map((m, i) => (
+              <li key={i}>
+                {m.nombre_medicamento} {m.concentracion}: {m.dosis} cada {m.frecuencia_horas} h
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ---------- APP ---------- */
 export default function App() {
   const [usuario, setUsuario] = useState(null);
   const [pestana, setPestana] = useState('paciente');
 
   if (!usuario) return <Login onLogin={setUsuario} />;
+
+  const boton = (clave, texto) => (
+    <button className={pestana === clave ? 'activa' : ''} onClick={() => setPestana(clave)}>
+      {texto}
+    </button>
+  );
 
   return (
     <div className="panel">
@@ -257,15 +321,20 @@ export default function App() {
         <div>
           <strong>{usuario.nombre}</strong> · {usuario.rol}
         </div>
-        <button className="secundario" onClick={() => setUsuario(null)}>Cerrar sesión</button>
+        <button className="secundario" onClick={() => { setUsuario(null); setPestana('paciente'); }}>
+          Cerrar sesión
+        </button>
       </header>
       <nav>
-        <button className={pestana === 'paciente' ? 'activa' : ''} onClick={() => setPestana('paciente')}>Paciente</button>
-     <button className={pestana === 'cita' ? 'activa' : ''} onClick={() => setPestana('cita')}>Cita</button>
-     <button className={pestana === 'tratamiento' ? 'activa' : ''} onClick={() => setPestana('tratamiento')}>Tratamiento</button>
+        {boton('paciente', 'Paciente')}
+        {boton('cita', 'Cita')}
+        {boton('tratamiento', 'Tratamiento')}
+        {boton('resumen', 'Resumen')}
       </nav>
-    {pestana === 'cita' && <FormCita usuario={usuario} />}
-    {pestana === 'tratamiento' && <FormTratamiento usuario={usuario} />}
+      {pestana === 'paciente' && <FormPaciente usuario={usuario} />}
+      {pestana === 'cita' && <FormCita usuario={usuario} />}
+      {pestana === 'tratamiento' && <FormTratamiento usuario={usuario} />}
+      {pestana === 'resumen' && <Resumen usuario={usuario} />}
     </div>
   );
 }

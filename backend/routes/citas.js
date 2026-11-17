@@ -23,5 +23,27 @@ router.post('/citas', async (req, res) => {
         res.status(500).json({ error: 'Error al agendar la cita' });
     }
 });
+// Citas de los pacientes de un cuidador: /api/citas?id_usuario=2
+router.get('/citas', async (req, res) => {
+    const { id_usuario } = req.query;
+    if (!id_usuario) {
+        return res.status(400).json({ error: 'id_usuario es obligatorio' });
+    }
+    try {
+        const r = await pool.query(
+            `SELECT c.id_cita, c.fecha_hora, c.especialidad, c.profesional,
+                    c.estado_cita, p.nombre_paciente
+             FROM citas_medicas c
+             JOIN pacientes p ON p.rut_paciente = c.rut_paciente
+             WHERE p.id_usuario = $1
+             ORDER BY c.fecha_hora`,
+            [id_usuario]
+        );
+        res.json(r.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al listar citas' });
+    }
+});
 
 module.exports = router;

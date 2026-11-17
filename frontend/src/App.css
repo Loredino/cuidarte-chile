@@ -34,3 +34,7 @@ body { font-family: system-ui, sans-serif; background: #f3f6fa; margin: 0; }
   background: #fff; color: #111827; font-size: 14px; }
 .formulario button.agregar { background: #fff; color: #2563eb; border: 1px dashed #2563eb; }
 .formulario button.quitar { background: #fee2e2; color: #991b1b; padding: 6px; }
+.resumen h3 { margin: 16px 0 8px; }
+.resumen .item { padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px;
+  background: #f9fafb; margin-bottom: 8px; font-size: 14px; }
+.resumen ul { margin: 6px 0 0; padding-left: 20px; }
