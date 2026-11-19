@@ -47,7 +47,7 @@ cuidarte-chile/
 ## 🚀 Instalación y puesta en marcha
 
 ### Requisitos previos
-- Node.js (pega aquí tu versión de `node -v`) o superior
+- Node.js 20 o superior (desarrollado y probado con v24.12.0)
 - PostgreSQL y pgAdmin 4
 - Git
 
