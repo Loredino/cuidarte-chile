@@ -2,19 +2,19 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
+// Registra un paciente a nombre del usuario autenticado: POST /api/pacientes
 router.post('/pacientes', async (req, res) => {
-    const { rut_paciente, nombre_paciente, fecha_nacimiento,
-            nivel_dependencia, direccion, id_usuario } = req.body;
+    const { rut_paciente, nombre_paciente, fecha_nacimiento, nivel_dependencia, direccion } = req.body;
+    const id_usuario = req.usuario.id_usuario;
 
-    if (!rut_paciente || !nombre_paciente || !fecha_nacimiento ||
-        !nivel_dependencia || !direccion || !id_usuario) {
+    if (!rut_paciente || !nombre_paciente || !fecha_nacimiento) {
         return res.status(400).json({ error: 'Faltan campos obligatorios' });
     }
 
     try {
         const r = await pool.query(
             `INSERT INTO pacientes
-               (rut_paciente, nombre_paciente, fecha_nacimiento, nivel_dependencia, direccion, id_usuario)
+                (rut_paciente, nombre_paciente, fecha_nacimiento, nivel_dependencia, direccion, id_usuario)
              VALUES ($1, $2, $3, $4, $5, $6)
              RETURNING rut_paciente, nombre_paciente`,
             [rut_paciente, nombre_paciente, fecha_nacimiento, nivel_dependencia, direccion, id_usuario]
@@ -28,12 +28,10 @@ router.post('/pacientes', async (req, res) => {
     }
 });
 
-// Lista de pacientes de un cuidador: /api/pacientes?id_usuario=2
+// Pacientes activos del usuario autenticado: GET /api/pacientes
 router.get('/pacientes', async (req, res) => {
-    const { id_usuario } = req.query;
-    if (!id_usuario) {
-        return res.status(400).json({ error: 'id_usuario es obligatorio' });
-    }
+    const id_usuario = req.usuario.id_usuario;
+
     try {
         const r = await pool.query(
             `SELECT rut_paciente, nombre_paciente

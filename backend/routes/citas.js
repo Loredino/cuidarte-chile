@@ -2,14 +2,26 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
+// Agenda una cita; verifica que el paciente pertenezca al usuario autenticado
 router.post('/citas', async (req, res) => {
     const { fecha_hora, especialidad, profesional, rut_paciente } = req.body;
+    const id_usuario = req.usuario.id_usuario;
 
     if (!fecha_hora || !especialidad || !profesional || !rut_paciente) {
         return res.status(400).json({ error: 'Faltan campos obligatorios' });
     }
 
     try {
+        // El paciente debe pertenecer al usuario del token
+        const dueno = await pool.query(
+            `SELECT 1 FROM pacientes
+             WHERE rut_paciente = $1 AND id_usuario = $2`,
+            [rut_paciente, id_usuario]
+        );
+        if (dueno.rowCount === 0) {
+            return res.status(404).json({ error: 'El paciente no existe' });
+        }
+
         const r = await pool.query(
             `INSERT INTO citas_medicas (fecha_hora, especialidad, profesional, rut_paciente)
              VALUES ($1, $2, $3, $4)
@@ -23,12 +35,11 @@ router.post('/citas', async (req, res) => {
         res.status(500).json({ error: 'Error al agendar la cita' });
     }
 });
-// Citas de los pacientes de un cuidador: /api/citas?id_usuario=2
+
+// Citas de los pacientes del usuario autenticado: GET /api/citas
 router.get('/citas', async (req, res) => {
-    const { id_usuario } = req.query;
-    if (!id_usuario) {
-        return res.status(400).json({ error: 'id_usuario es obligatorio' });
-    }
+    const id_usuario = req.usuario.id_usuario;
+
     try {
         const r = await pool.query(
             `SELECT c.id_cita, c.fecha_hora, c.especialidad, c.profesional,

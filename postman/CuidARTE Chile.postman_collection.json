@@ -1,0 +1,435 @@
+{
+  "info": {
+    "_postman_id": "f75119e0-8336-4d48-84a9-e8935656c26a",
+    "name": "CuidARTE Chile",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56494252",
+    "_collection_link": "https://go.postman.co/collection/56494252-f75119e0-8336-4d48-84a9-e8935656c26a?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "0. Registrar usuario",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"nombre\": \"María Pérez\",\r\n    \"correo\": \"maria.perez@cuidarte.cl\",\r\n    \"password\": \"Cuidarte2026\",\r\n    \"telefono\": \"+56911112222\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/usuarios/registro",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "usuarios",
+            "registro"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "0d. Registrar usuario B",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"nombre\": \"Pedro Soto\",\r\n    \"correo\": \"pedro.soto@cuidarte.cl\",\r\n    \"password\": \"Cuidarte2026\",\r\n    \"telefono\": \"+56922223333\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/usuarios/registro",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "usuarios",
+            "registro"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "0b. Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.environment.set(\"token\", pm.response.json().token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"correo\": \"maria.perez@cuidarte.cl\",\r\n    \"password\": \"Cuidarte2026\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/usuarios/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "usuarios",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "0e. Login usuario B",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.environment.set(\"token\", pm.response.json().token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"correo\": \"pedro.soto@cuidarte.cl\",\r\n    \"password\": \"Cuidarte2026\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/usuarios/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "usuarios",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "0c. Login clave incorrecta (401)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"correo\": \"maria.perez@cuidarte.cl\",\r\n    \"password\": \"otraclave123\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/usuarios/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "usuarios",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "1. Registrar paciente",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"rut_paciente\": \"12.345.678-5\",\r\n    \"nombre_paciente\": \"José Fuentes\",\r\n    \"fecha_nacimiento\": \"1950-08-20\",\r\n    \"nivel_dependencia\": \"Moderada\",\r\n    \"direccion\": \"Av. Siempre Viva 742, Santiago\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/pacientes",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "pacientes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "1b. Registrar paciente (ignora id_usuario del body)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"rut_paciente\": \"14.567.890-1\",\r\n    \"nombre_paciente\": \"José Fuentes\",\r\n    \"fecha_nacimiento\": \"1950-08-20\",\r\n    \"nivel_dependencia\": \"Moderada\",\r\n    \"direccion\": \"Av. Siempre Viva 742, Santiago\",\r\n    \"id_usuario\": 99\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/pacientes",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "pacientes"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Agendar cita",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"fecha_hora\": \"2026-11-25 10:30:00\",\r\n    \"especialidad\": \"Geriatría\",\r\n    \"profesional\": \"Dr. Fuenzalida\",\r\n    \"rut_paciente\": \"11.222.333-4\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/citas",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "citas"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2b. Cita a paciente ajeno (404)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"fecha_hora\": \"2026-11-25 10:30:00\",\r\n    \"especialidad\": \"Geriatría\",\r\n    \"profesional\": \"Dr. Fuenzalida\",\r\n    \"rut_paciente\": \"16.789.012-3\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/citas",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "citas"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Crear tratamiento completo",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"descripcion_tratamiento\": \"Control de presión arterial y glicemia\",\r\n    \"fecha_inicio\": \"2026-11-14\",\r\n    \"fecha_fin\": \"2026-12-14\",\r\n    \"rut_paciente\": \"14.567.890-2\",\r\n    \"medicamentos\": [\r\n        {\r\n            \"nombre_medicamento\": \"Losartán\",\r\n            \"concentracion\": \"50 mg comprimidos\",\r\n            \"dosis\": \"1 comprimido\",\r\n            \"frecuencia_horas\": 24\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/tratamientos-completos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "tratamientos-completos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3d. Tratamiento a paciente ajeno (404)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"descripcion_tratamiento\": \"Control de presión arterial y glicemia\",\r\n    \"fecha_inicio\": \"2026-11-14\",\r\n    \"fecha_fin\": \"2026-12-14\",\r\n \"rut_paciente\": \"16.789.012-3\",\r\n    \"medicamentos\": [\r\n        {\r\n            \"nombre_medicamento\": \"Losartán\",\r\n            \"concentracion\": \"50 mg comprimidos\",\r\n            \"dosis\": \"1 comprimido\",\r\n            \"frecuencia_horas\": 24\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/tratamientos-completos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "tratamientos-completos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3b. Sin concentración (400)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"descripcion_tratamiento\": \"Control de presión arterial y glicemia\",\r\n    \"fecha_inicio\": \"2026-11-14\",\r\n    \"fecha_fin\": \"2026-12-14\",\r\n    \"rut_paciente\": \"14.567.890-2\",\r\n    \"medicamentos\": [\r\n        {\r\n            \"nombre_medicamento\": \"Losartán\",\r\n            \"dosis\": \"1 comprimido\",\r\n            \"frecuencia_horas\": 24\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/tratamientos-completos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "tratamientos-completos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3c. Paciente inexistente (404)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"descripcion_tratamiento\": \"Control de presión arterial y glicemia\",\r\n    \"fecha_inicio\": \"2026-11-14\",\r\n    \"fecha_fin\": \"2026-12-14\",\r\n    \"rut_paciente\": \"99.999.999-9\",\r\n    \"medicamentos\": [\r\n        {\r\n            \"nombre_medicamento\": \"Losartán\",\r\n            \"concentracion\": \"50 mg comprimidos\",\r\n            \"dosis\": \"1 comprimido\",\r\n            \"frecuencia_horas\": 24\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/tratamientos-completos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "tratamientos-completos"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  }
+}

@@ -64,6 +64,17 @@ router.post('/tratamientos-completos', async (req, res) => {
     try {
         await client.query('BEGIN');
 
+        // Verifica que el paciente pertenezca al usuario autenticado
+        const dueno = await client.query(
+            `SELECT 1 FROM pacientes
+             WHERE rut_paciente = $1 AND id_usuario = $2`,
+            [rut_paciente, req.usuario.id_usuario]
+        );
+        if (dueno.rowCount === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'El paciente no existe' });
+        }
+
         // 2. Insertar el tratamiento
         const insertTratamiento = `
             INSERT INTO tratamientos
@@ -114,37 +125,30 @@ router.post('/tratamientos-completos', async (req, res) => {
 
         // 23503 = violación de llave foránea (el paciente no existe)
         if (error.code === '23503') {
-            return res.status(404).json({
-                error: 'El paciente indicado no existe',
-                detalle: `No hay un paciente con rut_paciente ${rut_paciente}`
-            });
+            return res.status(404).json({ error: 'El paciente no existe' });
         }
 
-        res.status(500).json({
-            error: 'Error al registrar el tratamiento',
-            detalle: error.message
-        });
+        res.status(500).json({ error: 'Error al registrar el tratamiento' });
     } finally {
         client.release();
     }
 });
-// Tratamientos con sus medicamentos: /api/tratamientos?id_usuario=2
+
+// Tratamientos con sus medicamentos del usuario autenticado: GET /api/tratamientos
 router.get('/tratamientos', async (req, res) => {
-    const { id_usuario } = req.query;
-    if (!id_usuario) {
-        return res.status(400).json({ error: 'id_usuario es obligatorio' });
-    }
+    const id_usuario = req.usuario.id_usuario;
+
     try {
         const r = await pool.query(
             `SELECT t.id_esquema, t.descripcion_tratamiento, t.fecha_inicio,
                     t.fecha_fin, t.estado_tratamiento, p.nombre_paciente,
                     COALESCE(
-                      json_agg(json_build_object(
-                        'nombre_medicamento', m.nombre_medicamento,
-                        'concentracion', m.concentracion,
-                        'dosis', m.dosis,
-                        'frecuencia_horas', m.frecuencia_horas
-                      )) FILTER (WHERE m.id_medicamento IS NOT NULL), '[]'
+                        json_agg(json_build_object(
+                            'nombre_medicamento', m.nombre_medicamento,
+                            'concentracion', m.concentracion,
+                            'dosis', m.dosis,
+                            'frecuencia_horas', m.frecuencia_horas
+                        )) FILTER (WHERE m.id_medicamento IS NOT NULL), '[]'
                     ) AS medicamentos
              FROM tratamientos t
              JOIN pacientes p ON p.rut_paciente = t.rut_paciente
@@ -160,4 +164,5 @@ router.get('/tratamientos', async (req, res) => {
         res.status(500).json({ error: 'Error al listar tratamientos' });
     }
 });
+
 module.exports = router;
