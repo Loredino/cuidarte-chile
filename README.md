@@ -8,7 +8,7 @@ CuidARTE Chile es una solución tecnológica diseñada para apoyar a cuidadores 
 ## 🛠️ Arquitectura del Sistema
 El sistema utiliza una arquitectura por capas responsiva y escalable:
 
-* **Frontend:** React.js con componentes Bootstrap y Tailwind CSS para una interfaz intuitiva y accesible.
+* **Frontend:** React.js (Vite) con CSS propio, responsive y sin frameworks de estilos, para una interfaz intuitiva y accesible.
 * **Backend:** Node.js con Express para la implementación de la API REST.
 * **Base de Datos:** PostgreSQL (SGBD Relacional) con un esquema optimizado en **Tercera Forma Normal (3FN)**.
 
