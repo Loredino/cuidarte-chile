@@ -1,120 +1,98 @@
-# CuidARTE Chile - Plataforma de Gestión para Cuidadores Informales
+# CuidARTE Chile
 
-## 📌 Descripción del Proyecto
-CuidARTE Chile es una solución tecnológica diseñada para apoyar a cuidadores informales y familias en la gestión clínica, seguimiento de tratamientos farmacológicos y programación de citas médicas para personas bajo cuidado con dependencia severa.
+Aplicación web que ayuda a cuidadores informales de personas mayores o dependientes en Chile a organizar sus cuidados: pacientes, citas médicas, tratamientos con medicamentos, dosis del día y beneficios del programa Chile Cuida.
 
----
+Proyecto de título · Técnico Analista Programador · IPLACEX.
 
-## 🛠️ Arquitectura del Sistema
-El sistema utiliza una arquitectura por capas responsiva y escalable:
+**Sistema en línea:** https://cuidarte-chile.onrender.com
+(el servicio es gratuito y se suspende por inactividad; el primer acceso puede tardar cerca de un minuto).
+Las credenciales de los dos perfiles de prueba están en el informe final.
 
-* **Frontend:** React.js (Vite) con CSS propio, responsive y sin frameworks de estilos, para una interfaz intuitiva y accesible.
-* **Backend:** Node.js con Express para la implementación de la API REST.
-* **Base de Datos:** PostgreSQL (SGBD Relacional) con un esquema optimizado en **Tercera Forma Normal (3FN)**.
+## Tecnologías
 
----
+- **Backend:** Node.js, Express 5, PostgreSQL (`pg`), JWT y bcrypt.
+- **Frontend:** React 19 con Vite.
+- **Base de datos:** PostgreSQL, modelo en 3FN con seis tablas.
+- **Hosting:** Render (aplicación) y Neon (base de datos).
 
-## 🗄️ Modelo de Base de Datos y Normalización (3FN)
-La base de datos relacional `cuidarte_db` consta de 6 tablas principales con integridad referencial garantizada a través de claves primarias (PK) y foráneas (FK):
+## Funcionalidades
 
-1. **`usuarios`**: Perfiles de acceso y datos de los cuidadores principales.
-2. **`pacientes`**: Ficha de identificación, nivel de dependencia y dirección del paciente.
-3. **`citas_medicas`**: Agenda de atenciones, especialidades y profesionales de salud.
-4. **`tratamientos`**: Registro de esquemas terapéuticos, horarios y dosificación.
-5. **`medicamentos`**: Fármacos específicos asociados a cada tratamiento.
-6. **`beneficios`**: Registro de apoyos estatales y subsidios (ej. programa Chile Cuida).
+- Registro e inicio de sesión con contraseñas cifradas y token JWT.
+- Dos perfiles: **Cuidador Principal** y **Administrador**.
+- Gestión de pacientes, citas médicas, tratamientos con medicamentos y beneficios.
+- Resumen con las dosis del día, calculadas con la hora de la primera dosis y la frecuencia.
+- Administración de usuarios (listar, activar y desactivar), solo para el perfil Administrador.
+- Cada cuidador ve únicamente sus propios datos.
 
----
+## Estructura del repositorio
 
-## 📁 Estructura del Repositorio
-```text
-cuidarte-chile/
-├── backend/             # API REST (Node.js + Express)
-│   ├── middleware/      # auth.js (verificación de JWT)
-│   ├── routes/          # usuarios, pacientes, citas, tratamientos
-│   ├── db.js            # Conexión a PostgreSQL
-│   ├── index.js         # Punto de entrada del servidor
-│   └── .env.example     # Plantilla de variables de entorno
-├── frontend/            # Interfaz gráfica de usuario (React + Vite)
-├── database/
-│   └── schema.sql       # Creación de tablas (3FN), PK/FK
-├── postman/             # Colección de pruebas de la API
-└── README.md            # Documentación técnica del proyecto
+```
+backend/    API REST (Express): rutas, middleware y conexión a la base de datos
+frontend/   Interfaz en React + Vite
+database/   schema.sql: crea las tablas y carga datos de ejemplo
+postman/    Colección de pruebas de la API
 ```
 
----
+## Instalación local
 
-## 🚀 Instalación y puesta en marcha
+Requisitos: Node.js 22, PostgreSQL y Git.
 
-### Requisitos previos
-- Node.js 20 o superior (desarrollado y probado con v24.12.0)
-- PostgreSQL y pgAdmin 4
-- Git
+1. Clonar el repositorio y entrar a la carpeta del proyecto.
 
-### 1. Clonar el repositorio
-```bash
-git clone https://github.com/Loredino/cuidarte-chile.git
-cd cuidarte-chile
-```
+2. Crear la base de datos y cargar el esquema. **Atención:** `schema.sql` borra las tablas antes de crearlas; no lo ejecutes sobre una base con datos reales.
 
-### 2. Base de datos
-1. En pgAdmin 4, crear una base de datos llamada `cuidarte_db`.
-2. Abrir el Query Tool sobre esa base y ejecutar `database/schema.sql`.
-3. Verificar que se crearon las 6 tablas (Schemas > public > Tables).
+   ```bash
+   psql -U postgres -c "CREATE DATABASE cuidarte_db"
+   psql -U postgres -d cuidarte_db -f database/schema.sql
+   ```
 
-### 3. Backend
-```bash
-cd backend
-npm install
-copy .env.example .env
-```
+3. Configurar las variables de entorno: copiar `backend/.env.example` como `backend/.env` y completar los valores (contraseña de PostgreSQL y `JWT_SECRET`). El archivo `.env` no se sube al repositorio.
 
-Completar el archivo `.env`:
+4. Iniciar la API:
 
-| Variable | Descripción |
-|----------|-------------|
-| `DB_HOST` | Host de PostgreSQL (`localhost`) |
-| `DB_PORT` | Puerto de PostgreSQL (`5432`) |
-| `DB_USER` | Usuario de PostgreSQL (`postgres`) |
-| `DB_PASSWORD` | Contraseña del usuario de PostgreSQL |
-| `DB_NAME` | Nombre de la base de datos (`cuidarte_db`) |
-| `PORT` | Puerto del servidor (`3000`) |
-| `JWT_SECRET` | Clave secreta para firmar los tokens (texto largo y difícil de adivinar) |
+   ```bash
+   cd backend
+   npm install
+   node index.js
+   ```
 
-Iniciar el servidor:
-```bash
-node index.js
-```
-La API queda en `http://localhost:3000`.
+   La API queda en http://localhost:3000.
 
-### 4. Frontend
-En otra terminal:
-```bash
-cd frontend
-npm install
-npm run dev
-```
-La aplicación queda en `http://localhost:5173`.
+5. Iniciar la interfaz (en otra terminal):
 
----
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
 
-## 🔌 Endpoints principales
+   La interfaz queda en http://localhost:5173.
 
-| Método | Ruta | Acceso |
-|--------|------|--------|
-| POST | `/api/usuarios/registro` | Público |
-| POST | `/api/usuarios/login` | Público |
-| GET / POST | `/api/pacientes` | Requiere token |
-| GET / POST | `/api/citas` | Requiere token |
-| GET | `/api/tratamientos` | Requiere token |
-| POST | `/api/tratamientos-completos` | Requiere token (transacción) |
+## Variables de entorno
 
-Las rutas protegidas requieren el header `Authorization: Bearer <token>`.
-La colección de Postman está en la carpeta `postman/`.
+| Variable | Uso |
+|---|---|
+| `PORT` | Puerto del servidor (en Render lo define la plataforma) |
+| `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | Base de datos local |
+| `DATABASE_URL` | Base de datos en la nube (Neon). Si existe, reemplaza a las variables `DB_*` |
+| `JWT_SECRET` | Clave con la que se firman los tokens |
 
----
+## Despliegue
 
-## 🔒 Seguridad
-- Contraseñas almacenadas con hash (bcrypt).
-- Autenticación con JWT; el `id_usuario` se obtiene del token, nunca del cuerpo de la petición.
-- El archivo `.env` no se sube al repositorio (ver `.gitignore`).
+El backend y el frontend se publican juntos en un único servicio web de Render. Express sirve el frontend compilado (`frontend/dist`) y la API bajo `/api`.
+
+- **Build command:** `npm install --prefix backend && npm install --include=dev --prefix frontend && npm run build --prefix frontend`
+- **Start command:** `node backend/index.js`
+- **Variables en Render:** `DATABASE_URL`, `JWT_SECRET` y `NODE_VERSION=22`.
+- **Base de datos:** proyecto en Neon, creado ejecutando `database/schema.sql` en su SQL Editor.
+
+## Pruebas
+
+El sistema se probó manualmente: 18 casos de prueba con la colección de Postman de la carpeta `postman/` y con la interfaz. El detalle está en el informe final.
+
+## Limitaciones conocidas
+
+- No hay pruebas automatizadas.
+- El token de un usuario desactivado sigue siendo válido hasta 8 horas.
+- Las dosis con frecuencia de 24 horas o más muestran solo la hora ancla.
+- El módulo de visitas domiciliarias quedó como trabajo futuro.
