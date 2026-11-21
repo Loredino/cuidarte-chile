@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
-const API = 'http://localhost:3000/api';
+const API = import.meta.env.DEV ? 'http://localhost:3000/api' : '/api';
 
 let token = '';
 

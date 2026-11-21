@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -22,8 +23,12 @@ app.use('/api', require('./routes/citas'));
 app.use('/api', require('./routes/beneficios'));
 app.use('/api/admin', require('./routes/admin'));
 
-// Ruta de prueba inicial
-app.get('/', (req, res) => {
+// Frontend compilado (React). Solo existe después de ejecutar "npm run build" en frontend.
+const dist = path.join(__dirname, '..', 'frontend', 'dist');
+app.use(express.static(dist));
+
+// Ruta de prueba de la API
+app.get('/api/salud', (req, res) => {
     res.send('API de CuidARTE Chile funcionando correctamente 🚀');
 });
 
