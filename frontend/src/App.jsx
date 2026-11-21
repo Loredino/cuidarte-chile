@@ -20,6 +20,16 @@ async function post(ruta, cuerpo) {
   return { ok: res.ok, data };
 }
 
+async function patch(ruta, cuerpo) {
+  const res = await fetch(`${API}${ruta}`, {
+    method: 'PATCH',
+    headers: cabeceras(),
+    body: JSON.stringify(cuerpo),
+  });
+  const data = await res.json().catch(() => ({}));
+  return { ok: res.ok, data };
+}
+
 async function get(ruta) {
   const res = await fetch(`${API}${ruta}`, { headers: cabeceras() });
   if (!res.ok) throw new Error('Error en la solicitud');
@@ -388,6 +398,59 @@ function Resumen() {
   );
 }
 
+/* ---------- ADMINISTRACIÓN ---------- */
+function Administracion({ idPropio }) {
+  const [usuarios, setUsuarios] = useState([]);
+  const [msg, setMsg] = useState(null);
+
+  const cargar = () =>
+    get('/admin/usuarios')
+      .then(setUsuarios)
+      .catch(() => setMsg({ tipo: 'error', texto: 'No se pudo cargar la lista de usuarios' }));
+
+  useEffect(() => { cargar(); }, []);
+
+  const cambiarEstado = async (u) => {
+    setMsg(null);
+    try {
+      const { ok, data } = await patch(`/admin/usuarios/${u.id_usuario}`, { activo: !u.activo });
+      if (ok) {
+        setMsg({
+          tipo: 'ok',
+          texto: `${data.usuario.nombre}: cuenta ${data.usuario.activo ? 'activada' : 'desactivada'}`,
+        });
+        cargar();
+      } else {
+        setMsg({ tipo: 'error', texto: data.error || 'No se pudo actualizar' });
+      }
+    } catch {
+      setMsg({ tipo: 'error', texto: 'No se pudo conectar con el servidor' });
+    }
+  };
+
+  return (
+    <div className="resumen">
+      <h3>Administración de usuarios</h3>
+      {msg && <p className={msg.tipo === 'ok' ? 'exito' : 'error'}>{msg.texto}</p>}
+      {usuarios.map((u) => (
+        <div key={u.id_usuario} className="item">
+          <strong>{u.nombre}</strong> · {u.correo}
+          <br />
+          {u.rol} · {u.total_pacientes} paciente(s) · {u.activo ? 'Activa' : 'Desactivada'}
+          <br />
+          <button
+            className="secundario"
+            disabled={u.id_usuario === idPropio}
+            onClick={() => cambiarEstado(u)}
+          >
+            {u.activo ? 'Desactivar' : 'Activar'}
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ---------- APP ---------- */
 export default function App() {
   const [usuario, setUsuario] = useState(null);
@@ -418,12 +481,16 @@ export default function App() {
         {boton('tratamiento', 'Tratamiento')}
         {boton('beneficio', 'Beneficios')}
         {boton('resumen', 'Resumen')}
+        {usuario.rol === 'Administrador' && boton('admin', 'Administración')}
       </nav>
       {pestana === 'paciente' && <FormPaciente />}
       {pestana === 'cita' && <FormCita />}
       {pestana === 'tratamiento' && <FormTratamiento />}
       {pestana === 'beneficio' && <FormBeneficio />}
       {pestana === 'resumen' && <Resumen />}
+      {pestana === 'admin' && usuario.rol === 'Administrador' && (
+        <Administracion idPropio={usuario.id_usuario} />
+      )}
     </div>
   );
 }
