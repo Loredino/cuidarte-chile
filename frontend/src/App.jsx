@@ -22,6 +22,7 @@ async function post(ruta, cuerpo) {
 
 async function get(ruta) {
   const res = await fetch(`${API}${ruta}`, { headers: cabeceras() });
+  if (!res.ok) throw new Error('Error en la solicitud');
   return res.json();
 }
 
@@ -58,7 +59,7 @@ function Login({ onLogin }) {
 }
 
 /* ---------- PACIENTE ---------- */
-function FormPaciente({ usuario }) {
+function FormPaciente() {
   const vacio = { rut_paciente: '', nombre_paciente: '', fecha_nacimiento: '',
                   nivel_dependencia: 'Leve', direccion: '' };
   const [f, setF] = useState(vacio);
@@ -70,7 +71,7 @@ function FormPaciente({ usuario }) {
     e.preventDefault();
     setMsg(null);
     try {
-      const { ok, data } = await post('/pacientes', { ...f, id_usuario: usuario.id_usuario });
+      const { ok, data } = await post('/pacientes', f);
       if (ok) {
         setMsg({ tipo: 'ok', texto: `Paciente registrado: ${data.paciente.nombre_paciente}` });
         setF(vacio);
@@ -105,20 +106,20 @@ function FormPaciente({ usuario }) {
 }
 
 /* ---------- CITA ---------- */
-function FormCita({ usuario }) {
+function FormCita() {
   const vacio = { rut_paciente: '', fecha_hora: '', especialidad: '', profesional: '' };
   const [f, setF] = useState(vacio);
   const [pacientes, setPacientes] = useState([]);
   const [msg, setMsg] = useState(null);
 
   useEffect(() => {
-    get(`/pacientes?id_usuario=${usuario.id_usuario}`)
+    get('/pacientes')
       .then((lista) => {
         setPacientes(lista);
         if (lista.length > 0) setF((prev) => ({ ...prev, rut_paciente: lista[0].rut_paciente }));
       })
       .catch(() => setMsg({ tipo: 'error', texto: 'No se pudo cargar la lista de pacientes' }));
-  }, [usuario.id_usuario]);
+  }, []);
 
   const cambiar = (e) => setF({ ...f, [e.target.name]: e.target.value });
 
@@ -166,7 +167,7 @@ function FormCita({ usuario }) {
 }
 
 /* ---------- TRATAMIENTO ---------- */
-function FormTratamiento({ usuario }) {
+function FormTratamiento() {
   const medVacio = { nombre_medicamento: '', concentracion: '', dosis: '', frecuencia_horas: '' };
   const vacio = { rut_paciente: '', descripcion_tratamiento: '', fecha_inicio: '', fecha_fin: '' };
   const [f, setF] = useState(vacio);
@@ -175,13 +176,13 @@ function FormTratamiento({ usuario }) {
   const [msg, setMsg] = useState(null);
 
   useEffect(() => {
-    get(`/pacientes?id_usuario=${usuario.id_usuario}`)
+    get('/pacientes')
       .then((lista) => {
         setPacientes(lista);
         if (lista.length > 0) setF((prev) => ({ ...prev, rut_paciente: lista[0].rut_paciente }));
       })
       .catch(() => setMsg({ tipo: 'error', texto: 'No se pudo cargar la lista de pacientes' }));
-  }, [usuario.id_usuario]);
+  }, []);
 
   const cambiar = (e) => setF({ ...f, [e.target.name]: e.target.value });
   const cambiarMed = (i, campo, valor) =>
@@ -261,21 +262,85 @@ function FormTratamiento({ usuario }) {
   );
 }
 
+/* ---------- BENEFICIO ---------- */
+function FormBeneficio() {
+  const vacio = { rut_paciente: '', nombre_beneficio: '', descripcion: '', estado_beneficio: 'Activo' };
+  const [f, setF] = useState(vacio);
+  const [pacientes, setPacientes] = useState([]);
+  const [msg, setMsg] = useState(null);
+
+  useEffect(() => {
+    get('/pacientes')
+      .then((lista) => {
+        setPacientes(lista);
+        if (lista.length > 0) setF((prev) => ({ ...prev, rut_paciente: lista[0].rut_paciente }));
+      })
+      .catch(() => setMsg({ tipo: 'error', texto: 'No se pudo cargar la lista de pacientes' }));
+  }, []);
+
+  const cambiar = (e) => setF({ ...f, [e.target.name]: e.target.value });
+
+  const enviar = async (e) => {
+    e.preventDefault();
+    setMsg(null);
+    try {
+      const { ok, data } = await post('/beneficios', f);
+      if (ok) {
+        setMsg({ tipo: 'ok', texto: `Beneficio registrado (N° ${data.id_beneficio})` });
+        setF({ ...vacio, rut_paciente: f.rut_paciente });
+      } else {
+        setMsg({ tipo: 'error', texto: data.error || 'No se pudo registrar' });
+      }
+    } catch {
+      setMsg({ tipo: 'error', texto: 'No se pudo conectar con el servidor' });
+    }
+  };
+
+  if (pacientes.length === 0) {
+    return <p>Primero registra un paciente en la pestaña "Paciente".</p>;
+  }
+
+  return (
+    <form onSubmit={enviar} className="formulario">
+      <h3>Registrar beneficio Chile Cuida</h3>
+      <label>Paciente
+        <select name="rut_paciente" value={f.rut_paciente} onChange={cambiar}>
+          {pacientes.map((p) => (
+            <option key={p.rut_paciente} value={p.rut_paciente}>
+              {p.nombre_paciente} ({p.rut_paciente})
+            </option>
+          ))}
+        </select>
+      </label>
+      <input name="nombre_beneficio" placeholder="Nombre del beneficio (ej: Estipendio Cuidador)"
+             value={f.nombre_beneficio} onChange={cambiar} maxLength={120} required />
+      <input name="descripcion" placeholder="Descripción (opcional)"
+             value={f.descripcion} onChange={cambiar} />
+      <label>Estado
+        <select name="estado_beneficio" value={f.estado_beneficio} onChange={cambiar}>
+          <option>Activo</option>
+          <option>En postulación</option>
+          <option>Finalizado</option>
+        </select>
+      </label>
+      <button type="submit">Guardar beneficio</button>
+      {msg && <p className={msg.tipo === 'ok' ? 'exito' : 'error'}>{msg.texto}</p>}
+    </form>
+  );
+}
+
 /* ---------- RESUMEN ---------- */
-function Resumen({ usuario }) {
+function Resumen() {
   const [citas, setCitas] = useState([]);
   const [tratamientos, setTratamientos] = useState([]);
+  const [beneficios, setBeneficios] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const id = usuario.id_usuario;
-    Promise.all([
-      get(`/citas?id_usuario=${id}`),
-      get(`/tratamientos?id_usuario=${id}`),
-    ])
-      .then(([c, t]) => { setCitas(c); setTratamientos(t); })
+    Promise.all([get('/citas'), get('/tratamientos'), get('/beneficios')])
+      .then(([c, t, b]) => { setCitas(c); setTratamientos(t); setBeneficios(b); })
       .catch(() => setError('No se pudo cargar el resumen'));
-  }, [usuario.id_usuario]);
+  }, []);
 
   const fecha = (f) => (f ? String(f).slice(0, 10) : '—');
 
@@ -307,6 +372,16 @@ function Resumen({ usuario }) {
               </li>
             ))}
           </ul>
+        </div>
+      ))}
+
+      <h3>Beneficios</h3>
+      {beneficios.length === 0 && <p>Sin beneficios registrados.</p>}
+      {beneficios.map((b) => (
+        <div key={b.id_beneficio} className="item">
+          <strong>{b.nombre_paciente}</strong> · {b.nombre_beneficio}
+          <br />
+          {b.descripcion ? `${b.descripcion} · ` : ''}{b.estado_beneficio}
         </div>
       ))}
     </div>
@@ -341,12 +416,14 @@ export default function App() {
         {boton('paciente', 'Paciente')}
         {boton('cita', 'Cita')}
         {boton('tratamiento', 'Tratamiento')}
+        {boton('beneficio', 'Beneficios')}
         {boton('resumen', 'Resumen')}
       </nav>
-      {pestana === 'paciente' && <FormPaciente usuario={usuario} />}
-      {pestana === 'cita' && <FormCita usuario={usuario} />}
-      {pestana === 'tratamiento' && <FormTratamiento usuario={usuario} />}
-      {pestana === 'resumen' && <Resumen usuario={usuario} />}
+      {pestana === 'paciente' && <FormPaciente />}
+      {pestana === 'cita' && <FormCita />}
+      {pestana === 'tratamiento' && <FormTratamiento />}
+      {pestana === 'beneficio' && <FormBeneficio />}
+      {pestana === 'resumen' && <Resumen />}
     </div>
   );
 }
