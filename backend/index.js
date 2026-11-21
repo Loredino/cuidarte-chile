@@ -19,6 +19,7 @@ app.use('/api', auth);
 app.use('/api', require('./routes/tratamientos'));
 app.use('/api', require('./routes/pacientes'));
 app.use('/api', require('./routes/citas'));
+app.use('/api', require('./routes/beneficios'));
 
 // Ruta de prueba inicial
 app.get('/', (req, res) => {
