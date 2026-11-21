@@ -1,3 +1,10 @@
+-- =====================================================================
+-- CuidARTE Chile - Esquema de base de datos (PostgreSQL)
+-- ADVERTENCIA: este script BORRA todas las tablas antes de crearlas.
+-- No ejecutar sobre la base de la demo (cuidarte_db) con datos reales.
+-- Para probarlo, crear antes una base vacía (ej: cuidarte_schema_test).
+-- =====================================================================
+
 -- ELIMINACIÓN PREVIA
 DROP TABLE IF EXISTS beneficios CASCADE;
 DROP TABLE IF EXISTS medicamentos CASCADE;
@@ -57,6 +64,7 @@ CREATE TABLE medicamentos (
     id_esquema INT NOT NULL,
     dosis VARCHAR(50),
     frecuencia_horas INT,
+    hora_primera_dosis TIME NOT NULL DEFAULT '08:00',
     CONSTRAINT fk_medicamento_esquema FOREIGN KEY (id_esquema) REFERENCES tratamientos(id_esquema) ON DELETE CASCADE
 );
 
@@ -70,8 +78,11 @@ CREATE TABLE beneficios (
 );
 
 -- DATOS DE PRUEBA (SEED)
-INSERT INTO usuarios (nombre, correo, password_hash, telefono) VALUES
-('Loredana Romano', 'l.romano@cuidarte.cl', '$2a$10$e8Z3Pq0L...', '+56912345678');
+-- El hash es un marcador: para iniciar sesión, registra usuarios con
+-- POST /api/usuarios/registro, o reemplaza el hash por uno generado con bcrypt.
+-- El rol Administrador solo se asigna por BD (nunca desde la app).
+INSERT INTO usuarios (nombre, correo, password_hash, telefono, rol) VALUES
+('Loredana Romano', 'l.romano@cuidarte.cl', '$2a$10$e8Z3Pq0L...', '+56912345678', 'Administrador');
 
 INSERT INTO pacientes (rut_paciente, nombre_paciente, fecha_nacimiento, nivel_dependencia, direccion, id_usuario) VALUES
 ('14.567.890-2', 'Enrico Romano', '1958-06-15', 'Dependencia Severa', 'Quinta Normal, Santiago', 1);
@@ -80,11 +91,11 @@ INSERT INTO citas_medicas (fecha_hora, especialidad, profesional, estado_cita, r
 ('2026-11-10 10:30:00', 'Geriatría', 'Dr. Fuenzalida', 'Confirmada', '14.567.890-2'),
 ('2026-11-20 15:00:00', 'Kinesiología', 'Dra. Loyola', 'Pendiente', '14.567.890-2');
 
-INSERT INTO tratamientos (descripcion_tratamiento, estado_tratamiento, rut_paciente) VALUES
-('Manejo del dolor', 'Al día', '14.567.890-2');
+INSERT INTO tratamientos (descripcion_tratamiento, fecha_inicio, estado_tratamiento, rut_paciente) VALUES
+('Manejo del dolor', '2026-11-01', 'Al día', '14.567.890-2');
 
-INSERT INTO medicamentos (nombre_medicamento, concentracion, laboratorio, id_esquema, dosis, frecuencia_horas) VALUES
-('Tramadol', '50 mg cápsulas', 'Laboratorio Chile', 1, '1 cápsula', 8);
+INSERT INTO medicamentos (nombre_medicamento, concentracion, laboratorio, id_esquema, dosis, frecuencia_horas, hora_primera_dosis) VALUES
+('Tramadol', '50 mg cápsulas', 'Laboratorio Chile', 1, '1 cápsula', 8, '06:00');
 
 INSERT INTO beneficios (nombre_beneficio, descripcion, estado_beneficio, rut_paciente) VALUES
 ('Estipendio Cuidador - Chile Cuida', 'Subsidio mensual para cuidadores informales', 'Activo', '14.567.890-2');
