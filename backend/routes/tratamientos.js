@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
+// Hora en formato HH:MM (24 horas)
+const FORMATO_HORA = /^([01]\d|2[0-3]):[0-5]\d$/;
+
 // Valida el body y devuelve una lista de errores (vacía si todo está bien)
 function validarTratamiento(body) {
     const errores = [];
@@ -32,6 +35,9 @@ function validarTratamiento(body) {
                 if (!med.dosis) errores.push(`medicamento ${n}: dosis es obligatoria`);
                 if (!Number.isInteger(med.frecuencia_horas) || med.frecuencia_horas <= 0) {
                     errores.push(`medicamento ${n}: frecuencia_horas debe ser un número entero mayor a 0`);
+                }
+                if (med.hora_primera_dosis !== undefined && !FORMATO_HORA.test(med.hora_primera_dosis)) {
+                    errores.push(`medicamento ${n}: hora_primera_dosis debe tener formato HH:MM (ej: 08:00)`);
                 }
             });
         }
@@ -96,8 +102,9 @@ router.post('/tratamientos-completos', async (req, res) => {
         if (medicamentos && medicamentos.length > 0) {
             const insertMedicamento = `
                 INSERT INTO medicamentos
-                    (nombre_medicamento, concentracion, dosis, frecuencia_horas, id_esquema)
-                VALUES ($1, $2, $3, $4, $5);
+                    (nombre_medicamento, concentracion, dosis, frecuencia_horas,
+                     hora_primera_dosis, id_esquema)
+                VALUES ($1, $2, $3, $4, $5, $6);
             `;
 
             for (const med of medicamentos) {
@@ -106,6 +113,7 @@ router.post('/tratamientos-completos', async (req, res) => {
                     med.concentracion,
                     med.dosis,
                     med.frecuencia_horas,
+                    med.hora_primera_dosis || '08:00',
                     idEsquema
                 ]);
             }
@@ -147,8 +155,9 @@ router.get('/tratamientos', async (req, res) => {
                             'nombre_medicamento', m.nombre_medicamento,
                             'concentracion', m.concentracion,
                             'dosis', m.dosis,
-                            'frecuencia_horas', m.frecuencia_horas
-                        )) FILTER (WHERE m.id_medicamento IS NOT NULL), '[]'
+                            'frecuencia_horas', m.frecuencia_horas,
+                            'hora_primera_dosis', to_char(m.hora_primera_dosis, 'HH24:MI')
+                        ) ORDER BY m.id_medicamento) FILTER (WHERE m.id_medicamento IS NOT NULL), '[]'
                     ) AS medicamentos
              FROM tratamientos t
              JOIN pacientes p ON p.rut_paciente = t.rut_paciente

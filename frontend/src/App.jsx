@@ -36,6 +36,41 @@ async function get(ruta) {
   return res.json();
 }
 
+/* ---------- RECORDATORIOS: cálculo de dosis del día ---------- */
+const formatoHora = (min) =>
+  `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+
+// Devuelve las dosis de hoy ordenadas por hora.
+// Usa la hora de la primera dosis y la frecuencia en horas del medicamento.
+// Si la frecuencia es de 24 horas o más, se muestra solo la hora de la primera dosis.
+function dosisDeHoy(tratamientos) {
+  const hoy = new Date().toLocaleDateString('en-CA'); // AAAA-MM-DD en hora local
+  const lista = [];
+
+  tratamientos.forEach((t) => {
+    const inicio = String(t.fecha_inicio).slice(0, 10);
+    const fin = t.fecha_fin ? String(t.fecha_fin).slice(0, 10) : null;
+    if (inicio > hoy || (fin && fin < hoy)) return; // tratamiento fuera de fechas
+
+    t.medicamentos.forEach((m) => {
+      if (!m.frecuencia_horas || m.frecuencia_horas <= 0) return;
+      const [h, min] = (m.hora_primera_dosis || '08:00').split(':').map(Number);
+      const ancla = h * 60 + min;
+      const paso = m.frecuencia_horas * 60;
+
+      const horas = [];
+      if (paso >= 1440) {
+        horas.push(ancla);
+      } else {
+        for (let x = ancla % paso; x < 1440; x += paso) horas.push(x);
+      }
+      horas.forEach((x) => lista.push({ minutos: x, paciente: t.nombre_paciente, medicamento: m }));
+    });
+  });
+
+  return lista.sort((a, b) => a.minutos - b.minutos);
+}
+
 /* ---------- LOGIN ---------- */
 function Login({ onLogin }) {
   const [correo, setCorreo] = useState('');
@@ -178,7 +213,8 @@ function FormCita() {
 
 /* ---------- TRATAMIENTO ---------- */
 function FormTratamiento() {
-  const medVacio = { nombre_medicamento: '', concentracion: '', dosis: '', frecuencia_horas: '' };
+  const medVacio = { nombre_medicamento: '', concentracion: '', dosis: '',
+                     hora_primera_dosis: '08:00', frecuencia_horas: '' };
   const vacio = { rut_paciente: '', descripcion_tratamiento: '', fecha_inicio: '', fecha_fin: '' };
   const [f, setF] = useState(vacio);
   const [meds, setMeds] = useState([{ ...medVacio }]);
@@ -257,6 +293,10 @@ function FormTratamiento() {
                  onChange={(e) => cambiarMed(i, 'concentracion', e.target.value)} required />
           <input placeholder="Dosis (ej: 1 comprimido)" value={m.dosis}
                  onChange={(e) => cambiarMed(i, 'dosis', e.target.value)} required />
+          <label>Hora de la primera dosis
+            <input type="time" value={m.hora_primera_dosis}
+                   onChange={(e) => cambiarMed(i, 'hora_primera_dosis', e.target.value)} required />
+          </label>
           <input type="number" min="1" placeholder="Cada cuántas horas" value={m.frecuencia_horas}
                  onChange={(e) => cambiarMed(i, 'frecuencia_horas', e.target.value)} required />
           {meds.length > 1 && (
@@ -354,9 +394,24 @@ function Resumen() {
 
   const fecha = (f) => (f ? String(f).slice(0, 10) : '—');
 
+  const ahora = new Date();
+  const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
+  const dosis = dosisDeHoy(tratamientos);
+
   return (
     <div className="resumen">
       {error && <p className="error">{error}</p>}
+
+      <h3>Dosis de hoy</h3>
+      {dosis.length === 0 && <p>No hay dosis programadas para hoy.</p>}
+      {dosis.map((d, i) => (
+        <div key={i} className="item" style={d.minutos < minutosAhora ? { opacity: 0.55 } : {}}>
+          <strong>{formatoHora(d.minutos)}</strong> · {d.medicamento.nombre_medicamento}{' '}
+          {d.medicamento.concentracion}: {d.medicamento.dosis}
+          <br />
+          {d.paciente}{d.minutos < minutosAhora ? ' · hora ya pasada' : ''}
+        </div>
+      ))}
 
       <h3>Próximas citas</h3>
       {citas.length === 0 && <p>Sin citas registradas.</p>}
@@ -378,7 +433,10 @@ function Resumen() {
           <ul>
             {t.medicamentos.map((m, i) => (
               <li key={i}>
-                {m.nombre_medicamento} {m.concentracion}: {m.dosis} cada {m.frecuencia_horas} h
+                {m.nombre_medicamento} {m.concentracion}: {m.dosis}
+                {m.frecuencia_horas
+                  ? ` cada ${m.frecuencia_horas} h (primera dosis ${m.hora_primera_dosis})`
+                  : ' (sin frecuencia definida)'}
               </li>
             ))}
           </ul>
